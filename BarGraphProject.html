@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CSV Data Visualization</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- 
+    Bar Graph Project
+    https://github.com/mitsurukodama/BarGraphProject
+    Copyright [2023] [Austin Kodama]
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+  -->
+  
+  <!-- Input field to upload CSV file -->
+  <input type="file" id="csvFileInput" accept=".csv">
+  
+  <!-- Dropdowns for selecting X-axis and Y-axis -->
+  <div>
+    <label for="xAxisSelect">Select X-axis:</label>
+    <select id="xAxisSelect"></select>
+
+    <label for="yAxisSelect">Select Y-axis:</label>
+    <select id="yAxisSelect"></select>
+    
+    <!-- Button triggers the chart generation -->
+    <button onclick="generateChart()">Generate Chart</button>
+    
+    <!-- Button to clear the chart -->
+    <button onclick="clearChart()">Clear Chart</button>
+  </div>
+
+  <!-- Canvas element to render the bar chart -->
+  <div>
+    <canvas id="barChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    let csvData = null; // Variable to store CSV data
+    let myChart = null; // Variable to store the Chart instance
+
+    // Event listener for file input change
+    document.getElementById('csvFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(event) {
+        csvData = event.target.result;
+        populateDropdowns(); // Populate dropdowns after reading CSV
+      };
+      
+      reader.readAsText(file); // Read uploaded CSV file as text
+    });
+
+    // Function to populate dropdowns with CSV headers
+    function populateDropdowns() {
+      const rows = csvData.split('\n');
+      const headers = rows[0].split(',');
+      const xAxisSelect = document.getElementById('xAxisSelect');
+      const yAxisSelect = document.getElementById('yAxisSelect');
+
+      for (let i = 0; i < headers.length; i++) {
+        // Create options for X-axis and Y-axis dropdowns
+        const optionX = document.createElement('option');
+        optionX.text = headers[i];
+        optionX.value = i;
+        xAxisSelect.add(optionX);
+
+        const optionY = document.createElement('option');
+        optionY.text = headers[i];
+        optionY.value = i;
+        yAxisSelect.add(optionY);
+      }
+    }
+
+    // Function to generate the bar chart
+    function generateChart() {
+      const xAxisIndex = parseInt(document.getElementById('xAxisSelect').value);
+      const yAxisIndex = parseInt(document.getElementById('yAxisSelect').value);
+      
+      const rows = csvData.split('\n');
+      const labels = [];
+      const data = [];
+
+      // Extract data for X-axis labels and Y-axis values
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i].split(',');
+        labels.push(row[xAxisIndex]);
+        data.push(parseFloat(row[yAxisIndex]));
+      }
+
+      const xAxisLabel = document.getElementById('xAxisSelect').options[xAxisIndex].text;
+      const yAxisLabel = document.getElementById('yAxisSelect').options[yAxisIndex].text;
+
+      if (myChart) {
+        myChart.destroy(); // Clear previous chart instance if exists
+      }
+
+      // Create a new bar chart
+      createBarChart(labels, data, xAxisLabel, yAxisLabel);
+    }
+
+    // Function to create the bar chart
+    function createBarChart(labels, data, xAxisLabel, yAxisLabel) {
+      const ctx = document.getElementById('barChart').getContext('2d');
+
+      myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: yAxisLabel,
+            data: data,
+            backgroundColor: 'rgba(54, 162, 235, 1)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: xAxisLabel
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: yAxisLabel
+              },
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // Function to clear the chart
+    function clearChart() {
+      if (myChart) {
+        myChart.destroy(); // Destroy the current chart instance
+      }
+    }
+  </script>
+</body>
+</html>
